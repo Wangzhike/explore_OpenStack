@@ -59,17 +59,21 @@
 	| Notifier		| topic				| exchange, all other attributes ignored	|
 
 
-3. Server	
+3. Server
+
 	A RPC server exposes a number of endpoints, each of which contains a set of methods which may be invoked remotely by clients over a given transport.	
 
-4. RPC Client	
+4. RPC Client
+
 	通过RPC Client，可以远程调用RPC Server上的方法。远程调用时，需要提供一个字典对象来指明调用的上下文，调用方法的名字和传递给调用方法的参数(用字典表示)。有`cast`和`call`两种远程调用方式。通过cast方式远程调用时，请求发送后就直接返回了；通过call方式远程调用，需要等响应从服务器返回。	
 	> The default target used for all subsequent calls and casts is supplied to the RPCClient constructor.  The client uses the target to control how the RPC request is delivered to a server.  If only the target's topic (and optionally exchange) are set, then the RPC can be serviced by any server that is listening to that topic (and exchange).  If multiple servers are listening on that topic/exchange, then one server is picked using a best-effort round-robin algorithm.  Alternatively, the client can set the Target's ``server`` attribute to the name of a specific server to send the RPC request to one particular server.  In the case of RPC cast, the RPC request can be broadcast to all servers listening to the Target's topic/exchange by setting the Target's ``fanout`` property to ``True``.	
 
-5. Notifer	
+5. Notifer
+
 	Notifer用来通知某种transport发送通知消息。	
 
-6. Notification Listener	
+6. Notification Listener
+
 	Notification Listener和Server类似，一个Notification Listener对象可以暴露多个endpoint，每个endpoint包含一组方法。但是与Server对象中的endpoint不同的是，这里的endpoint中的方法对应通知消息的不同优先级。	
 
 
