@@ -76,6 +76,7 @@
 	Notification Listener和Server类似，一个Notification Listener对象可以暴露多个endpoint，每个endpoint包含一组方法。但是与Server对象中的endpoint不同的是，这里的endpoint中的方法对应通知消息的不同优先级。	
 
 ## 2. RPC Client与RPC Server之间的消息模型：	
+
 	![RPC_routing](https://github.com/Wangzhike/explore_OpenStack/raw/master/oslo-messaging/pictures/RPC_routing.png)	
 	openstack exchange的`routing_key`为topic.[server]，其中`server`为可选部分。正如上面所述，如果server为空，只指定topic，那么采用`best-effort round-robin`算法从监听该topic的所有服务器中选择一台为客户端服务；如果也指定了server选项，那么将选择监听该topic且名字为server选项的服务器来为客户端服务。		
 
