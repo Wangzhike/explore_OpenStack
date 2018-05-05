@@ -153,6 +153,10 @@ except KeyboardInterrupt:
 server.wait()
 ```
 
+执行`cast`调用前，使用`prepare`方法修改RPC Client的Target对象的属性，可以修改的属性包括：exchange、topic、namespcae、version、server、fanout、timeout、version_cap和retry。修改后的target属性只在prepare()方法返回的对象中有效。	
+由于prepare()方法设置`fanout=True`，如上所述，RPC Client的cast调用会广播给所有监听该topic的服务器，从而引发它们每一个上的远程过程调用。		
+
+
 1. 打开一个终端，运行`python server.py server1`		
 
 	终端输出(忽略警告信息)：	
@@ -363,8 +367,4 @@ server.wait()
 	reply_cdf32d06f44743b6a9852b003b710bc3	direct
 	test_fanout	fanout
 	```
-
-执行`cast`调用前，使用`prepare`方法修改RPC Client的Target对象的属性，可以修改的属性包括：exchange、topic、namespcae、version、server、fanout、timeout、version_cap和retry。修改后的target属性只在prepare()方法返回的对象中有效。	
-由于prepare()方法设置`fanout=True`，如上所述，RPC Client的cast调用会广播给所有监听该topic的服务器，从而引发它们每一个上的远程过程调用。		
-
 
