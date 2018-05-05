@@ -1,6 +1,5 @@
-# oslo.messaging使用	
+# oslo-messaging的RPC使用
 
-## 1. RPC	
 几个基本概念：	
 1. Transport	
 
@@ -22,7 +21,7 @@
 	1. exchange		
 		> A scope for topics. Leave unspecified to default to the `control_exchange` configuration option.	
 
-		对应于RabbitMQ中的exchange，负责消息的转发，其`exchange_type=direct`(猜测，因为现象最符合)，此处的`tpoic`不是下文的`topic`，而是RabbitMQ中exchagne的`exchange_type`属性。		
+		对应于RabbitMQ中的exchange，负责消息的转发，其`exchange_type=topic`(通过`sudo rabbitmqctl list_exchanges`命令，看到类型为`topic`)，此处的`tpoic`不是下文的`topic`，而是RabbitMQ中exchagne的`exchange_type`属性。		
 	
 	2. topic	
 		> A name which identifies the set of interfaces exposed by a server. Multiple servers may listen on a topic and messages will be dispatched to one of the servers selected in a best-effort round-robin fashion (unless fanout is `True`).	
@@ -76,4 +75,6 @@
 
 	Notification Listener和Server类似，一个Notification Listener对象可以暴露多个endpoint，每个endpoint包含一组方法。但是与Server对象中的endpoint不同的是，这里的endpoint中的方法对应通知消息的不同优先级。	
 
+RPC Client与RPC Server之间的消息模型：	
+	![RPC_routing](https://github.com/Wangzhike/explore_OpenStack/raw/master/oslo-messaging/pictures/RPC_routing.png)	
 
