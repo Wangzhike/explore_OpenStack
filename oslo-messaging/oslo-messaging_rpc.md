@@ -1,6 +1,6 @@
 # oslo-messaging的RPC使用
 
-几个基本概念：	
+## 1. 几个基本概念：	
 1. Transport	
 
 2. Target	
@@ -75,10 +75,107 @@
 
 	Notification Listener和Server类似，一个Notification Listener对象可以暴露多个endpoint，每个endpoint包含一组方法。但是与Server对象中的endpoint不同的是，这里的endpoint中的方法对应通知消息的不同优先级。	
 
-RPC Client与RPC Server之间的消息模型：	
+## 2. RPC Client与RPC Server之间的消息模型：	
 	![RPC_routing](https://github.com/Wangzhike/explore_OpenStack/raw/master/oslo-messaging/pictures/RPC_routing.png)	
 	openstack exchange的`routing_key`为topic.[server]，其中`server`为可选部分。正如上面所述，如果server为空，只指定topic，那么采用`best-effort round-robin`算法从监听该topic的所有服务器中选择一台为客户端服务；如果也指定了server选项，那么将选择监听该topic且名字为server选项的服务器来为客户端服务。		
 
-如上图所示，在没有指定server选项的情况下，假设最终选定RPC Server1来服务。那么RPC Server1将执行远程调用，取得调用执行结果，然后创建一个`direct`类型的exchange，并和RPC Client创建的`Reply_#`的消息队列进行绑定，其`binding_key`即为该exchange的`routing_key`，将调用执行结果打包为消息，发送给exchange，再由exchange将消息转发到`Reply_#`的消息队列，由RPC Client取得该消息，并根据其中的`msg_id`信息识别出该消息属于哪次的RPC调用。	
+如上图所示，在没有指定server选项的情况下，假设最终选定RPC Server1来服务。那么RPC Server1将执行远程调用，取得调用执行结果，然后创建一个`direct`类型的exchange，并和RPC Client创建的`Reply_#`的消息队列进行绑定，其`binding_key`即为该exchange的`routing_key`，将调用执行结果打包为消息，发送给exchange，再由exchange将消息转发到`Reply_#`的消息队列，由RPC Client取得该消息，并根据其中的`msg_id`信息识别出该消息属于哪次的RPC调用。该过程的消息模型如下：		
+	![RPC_reply](https://github.com/Wangzhike/explore_OpenStack/raw/master/oslo-messaging/pictures/PRC_reply.png)	
+
+## 3. RPC Client和RPC Server程序说明消息模型	
+
+client代码：	
+
+```python
+from oslo_config import cfg
+import oslo_messaging as messaging
+import sys
+
+servername = sys.argv[1] if len(sys.argv) >= 2 else None
+print("servername: %s" % servername)
+transport = messaging.get_transport(cfg.CONF)
+# call调用对应的Target不能是fanout
+target = messaging.Target(topic='test', server=servername)
+client = messaging.RPCClient(transport, target)
+client.call(ctxt={}, method='test', arg='hello')
+print("Call test success")
+cctxt = client.prepare(namespace='control', version='2.0', fanout=True)
+cctxt.cast({}, 'stop')
+print("Cast stop success")
+```
+
+server代码：	
+
+```python
+from oslo_config import cfg
+import oslo_messaging
+import time
+import sys
+
+class ServerControlEndpoint(object):
+
+    target = oslo_messaging.Target(namespace='control', version='2.0')
+
+    def __init__(self, server):
+        self.server = server
+
+    def stop(self, ctx):
+        print('stop')
+        if self.server:
+            self.server.stop()
+
+class TestEndpoint(object):
+
+    def test(self, ctx, arg):
+        print(arg)
+        return arg
+
+servername = sys.argv[1] if len(sys.argv) >= 2 else 'server1'
+print("server: %s" % servername)
+transport = oslo_messaging.get_transport(cfg.CONF)
+target = oslo_messaging.Target(topic='test', server=servername)
+endpoinds = [
+    ServerControlEndpoint(None),
+    TestEndpoint(),
+]
+server = oslo_messaging.get_rpc_server(transport, target, endpoinds, executor='blocking')
+
+try:
+    server.start()
+    while True:
+        time.sleep(1)
+except KeyboardInterrupt:
+    server.stop()
+    print("Stopping server")
+
+server.wait()
+```
+
+1. 打开一个终端，运行`python server.py server1`		
+
+	执行`sudo rabbitmqctl list_queues`结果：	
+	```shell
+    Listing queues ...
+	test	0
+	test.server1	0
+	test_fanout_44a2de88ee674b4d8a83361e3b38e011	0
+	```
+
+	执行`sudo rabbitmqctl list_exchanges`结果：		
+	```shell
+    Listing exchanges ...
+	direct
+	amq.direct	direct
+	amq.fanout	fanout
+	amq.headers	headers
+	amq.match	headers
+	amq.rabbitmq.log	topic
+	amq.rabbitmq.trace	topic
+	amq.topic	topic
+	openstack	topic
+	test_fanout	fanout	
+	```
+
+	可见，在创建一个RPC Server时，就会创建一个名为`openstack`的类型为`topic`的exchange，以及创建一个名字为`topic_fanout`的类型为`fanout`的exchange，即`test_fanout`。	
 
 
