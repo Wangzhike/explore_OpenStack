@@ -103,7 +103,7 @@ sudo rabbitmqctl list_exchanges
 单个生产者发送一条消息，单个消费者接收该消息然后将其打印到屏幕上。	
 
 消息模型如下：	
-![python-one-overall](https://github.com/Wangzhike/explore-OpenStack/raw/master/oslo-messging/pictures/RabbitMQ/python-one-overall.png)
+![python-one-overall](https://github.com/Wangzhike/explore_OpenStack/raw/master/oslo-messging/pictures/RabbitMQ/python-one-overall.png)
 
 1. Sending	
 
@@ -117,5 +117,9 @@ sudo rabbitmqctl list_exchanges
 	3. 使用空字符串标识的默认exchange	
 
 		RabbitMQ消息模型的核心观念是生产者从不直接发送消息到消息队列，而是发送给exchange。默认的exchange由空字符串标识，并将发送给它的消息传递到和它的`routing_key`选项同名的消息队列中。	
-	
-	4.
+
+	4. 关闭连接		
+
+		关闭连接，会刷新网络缓冲区并确保消息被发送到RabbitMQ。	
+
+
