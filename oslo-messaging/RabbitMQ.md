@@ -103,6 +103,7 @@ sudo rabbitmqctl list_exchanges
 单个生产者发送一条消息，单个消费者接收该消息然后将其打印到屏幕上。	
 
 消息模型如下：	
+
 ![python-one-overall](https://github.com/Wangzhike/explore_OpenStack/raw/master/oslo-messaging/pictures/RabbitMQ/python-one-overall.png)
 
 1. Sending	
