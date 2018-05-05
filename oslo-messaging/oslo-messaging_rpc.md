@@ -155,6 +155,11 @@ server.wait()
 
 1. 打开一个终端，运行`python server.py server1`		
 
+	终端输出(忽略警告信息)：	
+	```shell
+    server: server1	
+	```
+
 	执行`sudo rabbitmqctl list_queues`结果：	
 	```shell
     Listing queues ...
@@ -166,7 +171,7 @@ server.wait()
 	执行`sudo rabbitmqctl list_exchanges`结果：		
 	```shell
     Listing exchanges ...
-	direct
+			direct
 	amq.direct	direct
 	amq.fanout	fanout
 	amq.headers	headers
@@ -179,5 +184,184 @@ server.wait()
 	```
 
 	可见，在创建一个RPC Server时，就会创建一个名为`openstack`的类型为`topic`的exchange，以及创建一个名字为`topic_fanout`的类型为`fanout`的exchange，即`test_fanout`。	
+
+2. 打开另一个终端，运行`python server.py server2`	
+
+	终端输出(忽略警告信息)：	
+	```shell
+    server: server2 
+	```
+
+	执行`sudo rabbitmqctl list_queues`结果：	
+	```shell
+	Listing queues ...
+	test	0
+	test.server1	0
+	test.server2	0
+	test_fanout_1345b2fc32b64c69b90a20a50b7039a1	0
+	test_fanout_44a2de88ee674b4d8a83361e3b38e011	0
+	```
+
+	执行`sudo rabbitmqctl list_exchanges`结果：		
+	```shell
+	Listing exchanges ...
+			direct
+	amq.direct	direct
+	amq.fanout	fanout
+	amq.headers	headers
+	amq.match	headers
+	amq.rabbitmq.log	topic
+	amq.rabbitmq.trace	topic
+	amq.topic	topic
+	openstack	topic
+	test_fanout	fanout
+	```
+
+3. 打开另一个终端，执行`python client.py`	
+
+	终端输出：	
+	```shell
+    servername: None
+	Call test success
+	Cast stop success	
+	```
+
+	server1终端输出：	
+	```shell
+	hello
+    stop
+	```
+
+	server2终端输出：	
+	```shell
+	stop
+	```
+
+	执行`sudo rabbitmqctl list_queues`结果：	
+	```shell
+	Listing queues ...
+	reply_5a16a4a86b664c058fba9b929b6d8c17	0
+	test	0
+	test.server1	0
+	test.server2	0
+	test_fanout_1345b2fc32b64c69b90a20a50b7039a1	0
+	test_fanout_44a2de88ee674b4d8a83361e3b38e011	0	
+	```
+
+	执行`sudo rabbitmqctl list_exchanges`结果：		
+	```shell
+	Listing exchanges ...
+			direct
+	amq.direct	direct
+	amq.fanout	fanout
+	amq.headers	headers
+	amq.match	headers
+	amq.rabbitmq.log	topic
+	amq.rabbitmq.trace	topic
+	amq.topic	topic
+	openstack	topic
+	reply_5a16a4a86b664c058fba9b929b6d8c17	direct
+	test_fanout	fanout
+	```
+
+4. 在client终端，继续执行`python client.py server2`		
+
+	终端输出：	
+	```shell
+	servername: server2
+	Call test success 
+	Cast stop success
+	```
+
+	server1终端输出：	
+	```shell
+	stop
+	```
+
+	server2终端输出：	
+	```shell
+	hello
+	stop
+	```
+
+	执行`sudo rabbitmqctl list_queues`结果：	
+	```shell
+	Listing queues ...
+	reply_5a16a4a86b664c058fba9b929b6d8c17	0
+	reply_cdf32d06f44743b6a9852b003b710bc3	0
+	test	0
+	test.server1	0
+	test.server2	0
+	test_fanout_1345b2fc32b64c69b90a20a50b7039a1	0
+	test_fanout_44a2de88ee674b4d8a83361e3b38e011	0
+	```
+
+	执行`sudo rabbitmqctl list_exchanges`结果：		
+	```shell
+	Listing exchanges ...
+			direct
+	amq.direct	direct
+	amq.fanout	fanout
+	amq.headers	headers
+	amq.match	headers
+	amq.rabbitmq.log	topic
+	amq.rabbitmq.trace	topic
+	amq.topic	topic
+	openstack	topic
+	reply_5a16a4a86b664c058fba9b929b6d8c17	direct
+	reply_cdf32d06f44743b6a9852b003b710bc3	direct
+	test_fanout	fanout
+	```
+
+5. 在client终端，继续执行`python client.py server1`		
+
+	终端输出：	
+	```shell
+	servername: server1
+	Call test success
+	Cast stop success
+	```
+
+	server1终端输出：	
+	```shell
+	hello
+	stop
+	```
+
+	server2终端输出：	
+	```shell
+	stop
+	```
+
+	执行`sudo rabbitmqctl list_queues`输出：	
+	```shell
+	Listing queues ...
+	reply_207029192bf44eb3b92168b795c632b7	0
+	reply_5a16a4a86b664c058fba9b929b6d8c17	0
+	reply_cdf32d06f44743b6a9852b003b710bc3	0
+	test	0
+	test.server1	0
+	test.server2	0
+	test_fanout_1345b2fc32b64c69b90a20a50b7039a1	0
+	test_fanout_44a2de88ee674b4d8a83361e3b38e011	0
+	```
+
+	执行`sudo rabbitmqctl list_exchanges`输出：		
+	```shell
+	Listing exchanges ...
+			direct
+	amq.direct	direct
+	amq.fanout	fanout
+	amq.headers	headers
+	amq.match	headers
+	amq.rabbitmq.log	topic
+	amq.rabbitmq.trace	topic
+	amq.topic	topic
+	openstack	topic
+	reply_207029192bf44eb3b92168b795c632b7	direct
+	reply_5a16a4a86b664c058fba9b929b6d8c17	direct
+	reply_cdf32d06f44743b6a9852b003b710bc3	direct
+	test_fanout	fanout
+	```
 
 
