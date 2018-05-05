@@ -77,12 +77,12 @@
 
 ## 2. RPC Client与RPC Server之间的消息模型
 
-	![RPC_routing](https://github.com/Wangzhike/explore_OpenStack/raw/master/oslo-messaging/pictures/RPC_routing.png)	
+![RPC_routing](https://github.com/Wangzhike/explore_OpenStack/raw/master/oslo-messaging/pictures/RPC_routing.png)	
 
-	openstack exchange的`routing_key`为topic.[server]，其中`server`为可选部分。正如上面所述，如果server为空，只指定topic，那么采用`best-effort round-robin`算法从监听该topic的所有服务器中选择一台为客户端服务；如果也指定了server选项，那么将选择监听该topic且名字为server选项的服务器来为客户端服务。		
+openstack exchange的`routing_key`为topic.[server]，其中`server`为可选部分。正如上面所述，如果server为空，只指定topic，那么采用`best-effort round-robin`算法从监听该topic的所有服务器中选择一台为客户端服务；如果也指定了server选项，那么将选择监听该topic且名字为server选项的服务器来为客户端服务。		
 
 如上图所示，在没有指定server选项的情况下，假设最终选定RPC Server1来服务。那么RPC Server1将执行远程调用，取得调用执行结果，然后创建一个`direct`类型的exchange，并和RPC Client创建的`Reply_#`的消息队列进行绑定，其`binding_key`即为该exchange的`routing_key`，将调用执行结果打包为消息，发送给exchange，再由exchange将消息转发到`Reply_#`的消息队列，由RPC Client取得该消息，并根据其中的`msg_id`信息识别出该消息属于哪次的RPC调用。该过程的消息模型如下：		
-	![RPC_reply](https://github.com/Wangzhike/explore_OpenStack/raw/master/oslo-messaging/pictures/PRC_reply.png)	
+![RPC_reply](https://github.com/Wangzhike/explore_OpenStack/raw/master/oslo-messaging/pictures/PRC_reply.png)	
 
 ## 3. RPC Client和RPC Server程序说明消息模型	
 
